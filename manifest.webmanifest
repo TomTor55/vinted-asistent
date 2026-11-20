@@ -1,0 +1,15 @@
+{
+  "name": "Vinted asistent",
+  "short_name": "Inzeráty",
+  "description": "Fotky a diktovaný popis inzerátov → Google Drive",
+  "lang": "sk",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b7a75",
+  "theme_color": "#0b7a75",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

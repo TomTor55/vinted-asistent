@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="sk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b7a75">
+  <title>Vinted asistent</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <button id="btnBack" class="icon-btn" aria-label="Späť" hidden>←</button>
+    <h1 id="title">Inzeráty</h1>
+    <button id="btnSettings" class="icon-btn" aria-label="Nastavenia">⚙</button>
+  </header>
+
+  <main>
+    <!-- ZOZNAM -->
+    <section id="viewList">
+      <div id="authBanner" class="banner" hidden></div>
+      <ul id="list" class="cards"></ul>
+      <p id="empty" class="empty" hidden>Zatiaľ žiadne inzeráty.<br>Ťukni na <b>+ Nový inzerát</b>.</p>
+    </section>
+
+    <!-- INZERÁT -->
+    <section id="viewEdit" hidden>
+      <div id="statusLine" class="status-line" hidden></div>
+
+      <h2>Fotky <span id="photoCount" class="muted"></span></h2>
+      <div id="photos" class="photos"></div>
+      <div class="row edit-only">
+        <label class="btn">📷 Odfotiť
+          <input type="file" accept="image/*" capture="environment" id="inCamera" hidden>
+        </label>
+        <label class="btn">🖼 Z galérie
+          <input type="file" accept="image/*" multiple id="inGallery" hidden>
+        </label>
+      </div>
+
+      <h2>Popis</h2>
+      <textarea id="diktat" rows="8"
+        placeholder="Napr.: Zara dámska zimná bunda, veľkosť M, čierna, nosená jednu sezónu, malá škvrna na rukáve, cena 18 eur."></textarea>
+      <div class="row edit-only">
+        <button id="btnDictate" class="btn" type="button">🎤 Diktovať</button>
+        <span id="interim" class="interim"></span>
+      </div>
+      <p class="hint edit-only">Povedz: čo to je, značka, veľkosť, farba, stav, chyby, materiál, cena.
+        Diktovať sa dá aj mikrofónom na klávesnici.</p>
+
+      <h2>Cena (€) <span class="muted">– voliteľné</span></h2>
+      <input id="cena" type="number" inputmode="decimal" min="0" step="0.5" placeholder="napr. 18">
+
+      <div id="progress" class="progress" hidden>
+        <progress id="progBar" max="100" value="0"></progress>
+        <span id="progText"></span>
+      </div>
+
+      <div class="actions">
+        <button id="btnDelete" class="btn danger" type="button">Zmazať</button>
+        <button id="btnSend" class="btn primary" type="button">Odoslať na Drive</button>
+      </div>
+    </section>
+
+    <!-- NASTAVENIA -->
+    <section id="viewSettings" hidden>
+      <h2>Google Drive</h2>
+      <p id="authStatus"></p>
+      <div class="row">
+        <button id="btnSignIn" class="btn primary" type="button">Prihlásiť</button>
+        <button id="btnSignOut" class="btn" type="button">Odhlásiť</button>
+      </div>
+      <p class="hint">Appka vidí na tvojom Drive iba priečinok <b>Vinted-asistent</b>, ktorý sama vytvorí.</p>
+      <h2>O appke</h2>
+      <p class="muted" id="about"></p>
+    </section>
+  </main>
+
+  <button id="fab" class="fab" type="button">+ Nový inzerát</button>
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <script src="config.js"></script>
+  <script src="db.js"></script>
+  <script src="drive.js"></script>
+  <script src="app.js"></script>
+  <script async defer src="https://accounts.google.com/gsi/client" onload="Drive.onGisLoaded()"></script>
+</body>
+</html>
