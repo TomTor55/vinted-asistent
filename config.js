@@ -8,5 +8,5 @@ window.APP_CONFIG = {
   photoMaxSide: 1600,
   photoQuality: 0.85,
   speechLang: "sk-SK",
-  version: "1.0.0"
+  version: "1.1.0"
 };

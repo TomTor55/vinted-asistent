@@ -135,3 +135,26 @@ textarea[readonly], input[readonly] { background: transparent; }
 .toast.err { background: var(--danger); }
 
 .readonly .edit-only { display: none; }
+
+/* detaily: stav, farba, materiál */
+h3 { font-size: 14px; margin: 14px 0 6px; font-weight: 600; }
+h3 .muted { font-weight: 400; }
+.detaily-hlavicka { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.link-btn {
+  background: none; border: 0; padding: 6px 0; color: var(--accent);
+  font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 36px; padding: 0 12px; border-radius: 18px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  font: inherit; font-size: 14px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.chip.on { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
+.chip .auto { font-size: 12px; }
+.chip .swatch { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(0,0,0,.25); flex: none; }
+.chip .swatch.multi { background: conic-gradient(#e53935, #fdd835, #43a047, #1e88e5, #8e24aa, #e53935); }
+.chip[disabled] { cursor: default; }
+.readonly .chip:not(.on) { display: none; }
+.chips:empty::after { content: '–'; color: var(--muted); }

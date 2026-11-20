@@ -53,6 +53,20 @@
       <h2>Cena (€) <span class="muted">– voliteľné</span></h2>
       <input id="cena" type="number" inputmode="decimal" min="0" step="0.5" placeholder="napr. 18">
 
+      <div class="detaily-hlavicka">
+        <h2>Detaily <span class="muted">– voliteľné</span></h2>
+        <button id="btnZnova" class="link-btn edit-only" type="button">↺ podľa diktátu</button>
+      </div>
+      <p class="hint edit-only">Appka ich predvyberie z diktátu (✨). Ťuknutím opravíš. Čo nevyberieš, doplní Claude na PC.</p>
+
+      <h3>Stav</h3>
+      <div id="chipsStav" class="chips"></div>
+      <h3>Farba <span class="muted">(max. 2)</span></h3>
+      <div id="chipsFarby" class="chips"></div>
+      <h3>Materiál <span class="muted">(max. 3)</span></h3>
+      <div id="chipsMaterial" class="chips"></div>
+      <button id="btnViacMaterial" class="link-btn edit-only" type="button">Viac materiálov…</button>
+
       <div id="progress" class="progress" hidden>
         <progress id="progBar" max="100" value="0"></progress>
         <span id="progText"></span>
@@ -82,6 +96,7 @@
   <div id="toast" class="toast" role="status" hidden></div>
 
   <script src="config.js"></script>
+  <script src="ciselniky.js"></script>
   <script src="db.js"></script>
   <script src="drive.js"></script>
   <script src="app.js"></script>

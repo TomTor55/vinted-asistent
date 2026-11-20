@@ -154,6 +154,8 @@ async function newListing() {
   const rec = {
     id: uid(), vytvorene: isoLocal(), upravene: isoLocal(),
     diktat: '', cena: null, fotky: [], thumb: null, stav: 'koncept', chyba: '', drive: null,
+    vyber: { stav: null, farby: [], material: [] },
+    manual: { stav: false, farby: false, material: false },
   };
   await DB.put(rec);
   await openEdit(rec.id);
@@ -172,8 +174,11 @@ async function openEdit(id) {
   $('#btnSend').hidden = ro;
   $('#progress').hidden = true;
   $('#interim').textContent = '';
+  zabezpecVyber(rec);
+  state.viacMat = false;
   renderStatus();
   renderPhotos();
+  renderChips();
   showView('edit');
 }
 
@@ -251,6 +256,88 @@ async function removePhoto(i) {
   await saveNow(); renderPhotos(); renderStatus();
 }
 
+// ---------- detaily: stav, farba, materiál ----------
+const SKUPINY = {
+  stav:     { box: '#chipsStav',     zoznam: () => Ciselniky.STAVY_ZOBRAZ, max: 1, nazov: 'stav' },
+  farby:    { box: '#chipsFarby',    zoznam: () => Ciselniky.FARBY_ZOBRAZ, max: 2, nazov: 'farby' },
+  material: { box: '#chipsMaterial', zoznam: () => Ciselniky.MATERIALY, max: 3, nazov: 'materiály' },
+};
+
+function zabezpecVyber(rec) {
+  if (!rec.vyber) rec.vyber = { stav: null, farby: [], material: [] };
+  if (!rec.manual) rec.manual = { stav: false, farby: false, material: false };
+}
+const vybrane = (rec, sk) => sk === 'stav' ? (rec.vyber.stav == null ? [] : [rec.vyber.stav]) : rec.vyber[sk];
+
+// Predvyplní skupiny, ktoré používateľ ešte ručne nemenil (alebo všetky pri force).
+function aktualizujZDiktatu(force = false) {
+  const rec = state.current;
+  if (!rec || rec.stav === 'odoslany') return;
+  zabezpecVyber(rec);
+  const det = Ciselniky.rozpoznajVsetko($('#diktat').value);
+  for (const sk of Object.keys(SKUPINY)) {
+    if (force) rec.manual[sk] = false;
+    if (!rec.manual[sk]) rec.vyber[sk] = det[sk];
+  }
+  renderChips();
+  saveSoon();
+}
+let autoTimer;
+function autoSoon() { clearTimeout(autoTimer); autoTimer = setTimeout(() => aktualizujZDiktatu(false), 500); }
+
+function prepni(sk, id) {
+  const rec = state.current, cfg = SKUPINY[sk];
+  zabezpecVyber(rec);
+  if (sk === 'stav') rec.vyber.stav = rec.vyber.stav === id ? null : id;
+  else {
+    const arr = rec.vyber[sk];
+    const i = arr.indexOf(id);
+    if (i >= 0) arr.splice(i, 1);
+    else if (arr.length >= cfg.max) { toast(`Najviac ${cfg.max} ${cfg.nazov}. Najprv jednu zruš.`, true); return; }
+    else arr.push(id);
+  }
+  rec.manual[sk] = true;
+  renderChips();
+  saveSoon();
+}
+
+function renderChips() {
+  const rec = state.current;
+  zabezpecVyber(rec);
+  const ro = rec.stav === 'odoslany';
+  for (const [sk, cfg] of Object.entries(SKUPINY)) {
+    const box = $(cfg.box);
+    box.innerHTML = '';
+    const sel = vybrane(rec, sk);
+    let zoznam = cfg.zoznam();
+    if (sk === 'material' && !state.viacMat) {
+      zoznam = zoznam.filter((m, i) => i < Ciselniky.MATERIALY_HLAVNE || sel.includes(m.id));
+    }
+    for (const pol of zoznam) {
+      const on = sel.includes(pol.id);
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip' + (on ? ' on' : '');
+      b.disabled = ro;
+      b.setAttribute('aria-pressed', on);
+      if (sk === 'farby') {
+        const sw = document.createElement('span');
+        sw.className = 'swatch' + (pol.hex ? '' : ' multi');
+        if (pol.hex) sw.style.background = '#' + pol.hex;
+        b.append(sw);
+      }
+      b.append(document.createTextNode(pol.nazov));
+      if (on && !rec.manual[sk] && !ro) {
+        const a = document.createElement('span'); a.className = 'auto'; a.textContent = '✨'; a.title = 'podľa diktátu';
+        b.append(a);
+      }
+      if (!ro) b.addEventListener('click', () => prepni(sk, pol.id));
+      box.append(b);
+    }
+  }
+  $('#btnViacMaterial').textContent = state.viacMat ? 'Menej materiálov' : 'Viac materiálov…';
+}
+
 // ---------- diktovanie (rozpoznávanie reči v Chrome / Android) ----------
 class Dictation {
   constructor(h) {
@@ -299,6 +386,7 @@ function appendDictated(text) {
   ta.value = v + (v && !/\s$/.test(v) ? ' ' : '') + t;
   ta.scrollTop = ta.scrollHeight;
   saveSoon();
+  autoSoon();
 }
 
 function setupDictation() {
@@ -399,7 +487,9 @@ function init() {
   $('#btnSettings').addEventListener('click', () => { renderSettings(); showView('settings'); });
   $('#inCamera').addEventListener('change', e => { addPhotos(e.target.files); e.target.value = ''; });
   $('#inGallery').addEventListener('change', e => { addPhotos(e.target.files); e.target.value = ''; });
-  $('#diktat').addEventListener('input', saveSoon);
+  $('#diktat').addEventListener('input', () => { saveSoon(); autoSoon(); });
+  $('#btnZnova').addEventListener('click', () => { aktualizujZDiktatu(true); toast('Detaily vyčítané z diktátu znova.'); });
+  $('#btnViacMaterial').addEventListener('click', () => { state.viacMat = !state.viacMat; renderChips(); });
   $('#cena').addEventListener('input', saveSoon);
   $('#btnSend').addEventListener('click', send);
   $('#btnDelete').addEventListener('click', removeListing);

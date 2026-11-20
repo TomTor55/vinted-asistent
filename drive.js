@@ -138,6 +138,8 @@ const Drive = (() => {
       diktat: rec.diktat.trim(),
       cena: rec.cena,
       fotky: names,
+      // výber v appke (ID Vinted) – na PC má prednosť pred odhadom Clauda; prázdne = nevybrané
+      vyber: rec.vyber || { stav: null, farby: [], material: [] },
     };
     const json = new Blob([JSON.stringify(zber, null, 2)], { type: 'application/json' });
     await uploadFile('zber.json', json, 'application/json', rec.drive.folderId);

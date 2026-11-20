@@ -1,8 +1,8 @@
 'use strict';
 // Offline režim: appka sa otvorí aj bez signálu (odoslanie počká na pripojenie).
 // Pri zmene súborov appky zvýš číslo verzie.
-const CACHE = 'vinted-asistent-v1';
-const FILES = ['./', 'index.html', 'styles.css', 'config.js', 'db.js', 'drive.js', 'app.js',
+const CACHE = 'vinted-asistent-v2';
+const FILES = ['./', 'index.html', 'styles.css', 'config.js', 'ciselniky.js', 'db.js', 'drive.js', 'app.js',
   'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
