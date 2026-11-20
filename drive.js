@@ -115,7 +115,10 @@ const Drive = (() => {
   // Pri opakovaní po chybe pokračuje tam, kde skončil (rec.drive.uploaded).
   async function uploadListing(rec, persist, onProgress) {
     const root = await findOrCreateFolder(APP_CONFIG.rootFolderName, 'root');
-    const queue = await findOrCreateFolder(APP_CONFIG.queueFolderName, root);
+    const osoba = APP_CONFIG.osoby.find(o => o.id === rec.osoba);
+    if (!osoba) throw new Error('Nie je vybrané, komu inzerát patrí (⚙ Nastavenia).');
+    const osobaFolder = await findOrCreateFolder(osoba.priecinok, root);
+    const queue = await findOrCreateFolder(APP_CONFIG.queueFolderName, osobaFolder);
     if (!rec.drive || !rec.drive.folderId) {
       const folderName = rec.folderName;
       rec.drive = { folderId: await createFolder(folderName, queue), uploaded: [] };
@@ -134,6 +137,7 @@ const Drive = (() => {
     const zber = {
       verzia: 1,
       id: rec.folderName,
+      osoba: rec.osoba,          // PC skontroluje, že ukladá na správny Vinted účet
       vytvorene: rec.vytvorene,
       diktat: rec.diktat.trim(),
       cena: rec.cena,

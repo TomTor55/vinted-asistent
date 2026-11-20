@@ -80,6 +80,35 @@ function invalidateUpload(rec) {
   if (rec.stav === 'chyba') rec.stav = 'koncept';
 }
 
+// ---------- osoba (komu patria inzeráty z tohto telefónu) ----------
+function getOsoba() {
+  try { const id = localStorage.getItem('osoba'); return C.osoby.find(o => o.id === id) || null; } catch (_) { return null; }
+}
+function setOsoba(id) {
+  try { localStorage.setItem('osoba', id); } catch (_) {}
+  renderOsoba(); renderAuthBanner(); renderTitle();
+  const o = getOsoba();
+  if (o) toast(`Inzeráty pôjdu do priečinka: ${o.nazov}`);
+}
+function renderOsoba() {
+  const box = $('#chipsOsoba'), akt = getOsoba();
+  box.innerHTML = '';
+  for (const o of C.osoby) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip' + (akt && akt.id === o.id ? ' on' : '');
+    b.textContent = o.nazov;
+    b.addEventListener('click', () => setOsoba(o.id));
+    box.append(b);
+  }
+}
+function renderTitle() {
+  if (!$('#viewList').hidden) {
+    const o = getOsoba();
+    $('#title').textContent = o ? `Inzeráty · ${o.nazov}` : 'Inzeráty';
+  }
+}
+
 // ---------- navigácia ----------
 function showView(name, push = true) {
   ['list', 'edit', 'settings'].forEach(v => { $('#view' + v[0].toUpperCase() + v.slice(1)).hidden = v !== name; });
@@ -87,6 +116,7 @@ function showView(name, push = true) {
   $('#btnSettings').hidden = name !== 'list';
   $('#fab').hidden = name !== 'list';
   $('#title').textContent = name === 'list' ? 'Inzeráty' : name === 'settings' ? 'Nastavenia' : 'Inzerát';
+  renderTitle();
   if (push) history.pushState({ view: name }, '');
   window.scrollTo(0, 0);
 }
@@ -144,6 +174,9 @@ function renderAuthBanner() {
   if (!Drive.configured()) {
     b.hidden = false;
     b.textContent = 'Appka ešte nie je prepojená s Google Drive (chýba Client ID v config.js). Inzeráty sa dajú pripravovať, odoslať zatiaľ nie.';
+  } else if (!getOsoba()) {
+    b.hidden = false;
+    b.textContent = 'Najprv v ⚙ Nastaveniach vyber, komu patria inzeráty z tohto telefónu (Tomáš / Manželka).';
   } else b.hidden = true;
 }
 
@@ -416,6 +449,10 @@ async function send() {
   rec.diktat = $('#diktat').value;
   if (!rec.fotky.length) { toast('Pridaj aspoň jednu fotku.', true); return; }
   if (!rec.diktat.trim()) { toast('Chýba popis – nadiktuj, čo predávaš.', true); return; }
+  const osoba = getOsoba();
+  if (!osoba && !(rec.drive && rec.osoba)) { toast('Najprv v ⚙ Nastaveniach vyber, komu patria inzeráty.', true); return; }
+  // osoba sa zafixuje pri prvom pokuse (pri pokračovaní po chybe ostáva pôvodná)
+  if (!rec.drive) rec.osoba = osoba.id;
   if (state.dictation && state.dictation.active) state.dictation.stop();
 
   // Prihlásenie hneď v rámci ťuknutia (inak sa okno zablokuje).
@@ -484,7 +521,7 @@ function renderSettings() {
 function init() {
   $('#fab').addEventListener('click', newListing);
   $('#btnBack').addEventListener('click', () => history.back());
-  $('#btnSettings').addEventListener('click', () => { renderSettings(); showView('settings'); });
+  $('#btnSettings').addEventListener('click', () => { renderSettings(); renderOsoba(); showView('settings'); });
   $('#inCamera').addEventListener('change', e => { addPhotos(e.target.files); e.target.value = ''; });
   $('#inGallery').addEventListener('change', e => { addPhotos(e.target.files); e.target.value = ''; });
   $('#diktat').addEventListener('input', () => { saveSoon(); autoSoon(); });
